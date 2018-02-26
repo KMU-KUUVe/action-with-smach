@@ -23,24 +23,24 @@ class KeyListener():
 class Foo(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes=['outcome1', 'outcome2'])
+        self.key_value = '\0'
 
     def keyboard_cb(self, data):
-        self.mission_code = char(data.code)
-        print(mission_code)
-        return mission_code
+        self.key_value = chr(data.code)
+        print(self.key_value)
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FOO')
 
         self.key_sub = rospy.Subscriber('keyboard/keydown', Key, self.keyboard_cb)
-        self.key_value = self.keyboard_cb() 
         print("key value=")
-        print(key_value)
+        print(self.key_value)
 
-        if self.counter < 3:
-            return 'outcome1'
-        else:
+        if self.key_value == 'q':
             return 'outcome2'
+        elif self.key_value == 'w':
+            return 'outcome1'
+        rospy.spin()
 
 #define state Bar
 class Bar(smach.State):
@@ -70,7 +70,6 @@ def main():
     #Execute SMACH plan
     outcome = sm.execute()
     
-    rospy.spin()
 
 if __name__ == '__main__':
     main()
