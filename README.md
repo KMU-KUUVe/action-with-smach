@@ -10,4 +10,4 @@ Package for mission control
 - Actionlib
 ## Libraries
 - SDL1.2
-- wx
+- wx2.8
