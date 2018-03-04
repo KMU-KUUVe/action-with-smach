@@ -22,8 +22,10 @@ class KeyListener():
 #define state Foo
 class Foo(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes=['outcome1', 'outcome2'])
+        smach.State.__init__(self, outcomes=['outcome1', 'outcome2', 'outcome3'])
         self.key_value = '\0'
+
+        self.key_sub = rospy.Subscriber('keyboard/keydown', Key, self.keyboard_cb, queue_size=1)
 
     def keyboard_cb(self, data):
         self.key_value = chr(data.code)
@@ -31,16 +33,16 @@ class Foo(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo('Executing state FOO')
-
-        self.key_sub = rospy.Subscriber('keyboard/keydown', Key, self.keyboard_cb)
+        self.key_value = '\0'
         print("key value=")
         print(self.key_value)
-
-        if self.key_value == 'q':
-            return 'outcome2'
-        elif self.key_value == 'w':
-            return 'outcome1'
-        rospy.spin()
+        while 1:
+            if self.key_value == 'q':
+                return 'outcome3'
+            elif self.key_value == '1':
+                return 'outcome1'
+            elif self.key_value == '2':
+                return 'outcome2'
 
 #define state Bar
 class Bar(smach.State):
@@ -64,11 +66,18 @@ def main():
         #smach.StateMachine.add('FOO', smach_ros.MonitorState("/keyboard/keydown", Key, keyboard_cb), transitions={'1':'BAR'})
         #smach.StateMachine.add('BAR', smach_ros.MonitorState("/keyboard/keydown", Key, keyboard_cb), transitions={'2':'FOO'})
         #Add states to the container
-        smach.StateMachine.add('FOO', Foo(), transitions={'outcome1':'BAR', 'outcome2':'outcome4'})
-        smach.StateMachine.add('BAR', Bar(), transitions={'outcome2':'FOO'})
+        smach.StateMachine.add('MissionManager', Foo(), transitions={'outcome1':'Mission1', 'outcome2':'Mission2', 'outcome3':'outcome4'})
+        smach.StateMachine.add('Mission1', Bar(), transitions={'outcome2':'MissionManager'})
+        smach.StateMachine.add('Mission2', Bar(), transitions={'outcome2':'MissionManager'})
+
+    sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
+    sis.start()
 
     #Execute SMACH plan
     outcome = sm.execute()
+
+    rospy.spin()
+    sis.stop()
     
 
 if __name__ == '__main__':
