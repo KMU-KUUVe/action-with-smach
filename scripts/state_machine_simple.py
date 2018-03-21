@@ -8,17 +8,6 @@ from keyboard.msg import Key
 
 mission_code = '\0'
 
-"""
-class KeyListener():
-    def __init__(self):
-        self.key_sub = rospy.Subscriber('keyboard/keydown', Key, self.keyboard_cb)
-
-    def keyboard_cb(self, data):
-        mission_code = char(data.code)
-        print(mission_code)
-        return mission_code
-"""
-
 #define state Foo
 class Foo(smach.State):
     def __init__(self):
@@ -29,6 +18,7 @@ class Foo(smach.State):
 
     def keyboard_cb(self, data):
         self.key_value = chr(data.code)
+#print(data.code)
         print(self.key_value)
 
     def execute(self, userdata):
