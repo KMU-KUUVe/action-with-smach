@@ -37,18 +37,20 @@ class Foo(smach.State):
 
 #define state Bar
 class Bar(smach.State):
-	def __init__(self):
+	def __init__(self, client_name):
 		smach.State.__init__(self, outcomes=['outcome2'])
+		self.client_name = client_name
 
 	def execute(self, userdata):
 		rospy.loginfo('Executing state BAR')
-		client = actionlib.SimpleActionClient('Mission1', MissionPlannerAction)
+		client = actionlib.SimpleActionClient(self.client_name, MissionPlannerAction)
 		client.wait_for_server()
 		goal = MissionPlannerGoal() 
 		goal.mission = 2
+		rospy.loginfo("send goal")
 		client.send_goal(goal)
 		client.wait_for_result()
-		rospy.loginfo('Bar finish')
+		rospy.loginfo('%s finish'%self.client_name)
 		return 'outcome2'
 
 #main
@@ -61,8 +63,8 @@ def main():
     #Open the container
     with sm:
         smach.StateMachine.add('MissionManager', Foo(), transitions={'outcome1':'Mission1', 'outcome2':'Mission2', 'outcome3':'outcome4'})
-        smach.StateMachine.add('Mission1', Bar(), transitions={'outcome2':'MissionManager'})
-        smach.StateMachine.add('Mission2', Bar(), transitions={'outcome2':'MissionManager'})
+        smach.StateMachine.add('Mission1', Bar('Mission1'), transitions={'outcome2':'MissionManager'})
+        smach.StateMachine.add('Mission2', Bar('Mission2'), transitions={'outcome2':'MissionManager'})
 
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
@@ -76,4 +78,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
