@@ -62,9 +62,10 @@ def main():
 
     #Open the container
     with sm:
-        smach.StateMachine.add('MissionManager', Foo(), transitions={'outcome1':'Mission1', 'outcome2':'Mission2', 'outcome3':'outcome4'})
-        smach.StateMachine.add('Mission1', Bar('Mission1'), transitions={'outcome2':'MissionManager'})
-        smach.StateMachine.add('Mission2', Bar('Mission2'), transitions={'outcome2':'MissionManager'})
+        smach.StateMachine.add('MissionManager', Foo(), transitions={'outcome1':'dynamic_avoidance', 'outcome2':'uturn', 'outcome3':'follow_line'})
+        smach.StateMachine.add('dynamic_avoidance', Bar('dynamic_avoidance'), transitions={'outcome2':'MissionManager'})
+        smach.StateMachine.add('uturn', Bar('uturn'), transitions={'outcome2':'MissionManager'})
+        smach.StateMachine.add('follow_line', Bar('follow_line'), transitions={'outcome2':'MissionManager'})
 
     sis = smach_ros.IntrospectionServer('server_name', sm, '/SM_ROOT')
     sis.start()
